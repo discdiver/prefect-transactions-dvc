@@ -177,7 +177,7 @@ def check_model_val(history):
 
 
 @git_track.on_rollback
-def rollback_model(transaction):
+def rollback_workspace(transaction):
     """Automatically roll back the workspace to previous commit if model evaluation fails"""
     subprocess.run(split("git checkout HEAD~1"))
     subprocess.run(split("dvc checkout"))

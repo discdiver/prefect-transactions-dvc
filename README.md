@@ -1,8 +1,12 @@
-# Use Prefect 3's new transaction capabilities to train machine learning models more effectively
+# Use Prefect 3.0's new transaction capabilities to train machine learning models more effectively
 
-An example with Prefect and DVC for improved versioning of datasets and ML models
+Prefect helps you trust your workflows.
 
-This repo accompanies an article that shows how to use Prefect 3's transaction capabilities to roll back task's side effects when model performance doesn't meet your specifications.
+With Prefect 3.0, you can now group tasks into transactions, allowing you to roll back side effects on failure and significantly improve your pipeline's idempotency and resilience.
+
+In this example, you'll see how we can use Prefect with DVC for better datasets and ML model vrersionoing.
+
+In particular, we'll see how to roll back task's side effects when model performance doesn't meet your specifications.
 
 This example is adapted from DVC's Model Versioning tutorial. The original tutorial is available [here](https://dvc.org/doc/tutorials/versioning).
 
@@ -18,7 +22,7 @@ source .env/bin/activate
 pip install -r requirements.txt
 ```
 
-This example assumes you have a Prefect 3 server instance running or have a Prefect Cloud account with your CLI authenticated. See the [Quickstart instructions](https://docs-3.prefect.io/3.0/get-started/quickstart#connect-to-a-prefect-api), if needed.
+This example assumes you have a Prefect 3.0 server instance running or have a Prefect Cloud account with your CLI authenticated. See the [Quickstart instructions](https://docs-3.prefect.io/3.0/get-started/quickstart#connect-to-a-prefect-api), if needed.
 
 ## Run the Python script
 
@@ -45,24 +49,24 @@ This is a bit of a contrived example, but it shows the power of Prefect's transa
 
 Note that we are able to pass information for use even in the rollback function by using transaction's `get` and `set` methods.
 
-As we've seen, Prefect 3's transaction capabilities allow us to easily discard the data and model weights if a model's performance doesn't meet our specifications. We could have even undone code changes in other training scripts if we had used them to experiment with our model performance.
+As we've seen, Prefect 3.0's transaction capabilities allow us to easily discard the data and model weights if a model's performance doesn't meet our specifications. We could have even undone code changes in other training scripts if we had used them to experiment with our model performance.
 
-## Caching
+In this example, we use a transaction to group the `committing` and `model quality check`.
 
-Prefect 3's caching is based on transactions. TK
-Any tasks that we include in a `with transaction` context block will not be cached by Prefect if an error is raised.
-All the tasks in the block will run together, or not run together if they are cached.
+If the model quality check fails, the  `on_rollback` hook will reset the git and dvc commits, by
 
-See the [task caching docs](https://docs.prefect.io/latest/develop/task-caching) for more details.
-
-In this example, we use a transaction to group the `committing` and `model quality check`. If the model quality check fails, the `on_rollback` hook will reset the git and dvc commits, by
-
-In our example, if an error
-
-```python
-
+In our example, if an error is
 
 Transactions go through the following steps:
 
+## Caching groups of tasks
+
+Grouping multiple tasks in a `with transaction` block allows us to leverage Prefect's task caching behavior so that all tasks in the block run together or not at all.
+
+Any tasks that we include in a `with transaction` context block will not be cached by Prefect if an error is raised.
+
+See the [task caching docs](https://docs.prefect.io/latest/develop/task-caching) for more details.
 
 TK consider whether want to show caching. Maybe show how we don't need to fetch data if something hasn't changed - maybe the dataset name? The thinking being that we always use different dataset names, not the same one at our org.
+
+This repo accompanies an article that shows how to use Prefect 3's transaction capabilities.
