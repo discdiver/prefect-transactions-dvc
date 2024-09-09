@@ -23,6 +23,7 @@ In our setup, it expects:
 We have X training examples for each class, and 400 validation examples
 for each class. In summary, this is our directory structure:
 
+```
 data/
     train/
         dogs/
@@ -42,3 +43,4 @@ data/
             cat001.jpg
             cat002.jpg
             ...
+```
