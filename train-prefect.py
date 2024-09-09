@@ -51,11 +51,9 @@ from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras import applications
 from tensorflow.keras.callbacks import CSVLogger
 from tqdm.keras import TqdmCallback
-
 from prefect import flow, task
 from prefect.transactions import get_transaction, transaction
 
-dataset_info = [["data", "v1.0", 1000], ["new-labels", "v2.0", 2000]]
 
 @task
 def add_data(dataset_name: str = "data"):
@@ -181,7 +179,7 @@ def check_model_val(history):
 @git_track.on_rollback
 def rollback_workspace(transaction):
     """Automatically roll back the workspace to the previous commit if model evaluation fails"""
-    subprocess.run(split("git checkout v1.0"))
+    subprocess.run(split("checkout HEAD~1"))
     subprocess.run(split("dvc checkout"))
     subprocess.run(split(f"git tag -d {transaction.get('tagging')}"))
     print(f"Rolling back workspace from {transaction.get("tagging")} to previous commit because validation accuracy was too low")
@@ -199,28 +197,6 @@ def pipeline(dataset_name: str, tag: str, img_count: int, initial_run: bool = Fa
 
 
 if __name__ == "__main__":
+    dataset_info = [["data", "v1.0", 1000], ["new-labels", "v2.0", 2000]]
     pipeline(*dataset_info[0], initial_run=True)
     pipeline(*dataset_info[1])
-
-
-# from prefect.transactions import get_transaction, transaction
-
-# @task
-# def my_task(fpath: str):
-#     # do stuff with `fpath`
-#     # option 1: reference transaction inside task
-#     txn = get_transaction()
-#     txn.set("fpath", fpath)
-
-
-# @my_task.on_rollback
-# def my_hook(txn):
-#     data = txn.get("fpath") # now you can get the data from the transaction in the hook
-
-
-# @flow
-# def my_flow(fpath: str):
-#     with transaction() as txn:
-#         # option 2: use context manager and set variable here
-#         txn.set("fpath", fpath)
-#         my_task(fpath)
