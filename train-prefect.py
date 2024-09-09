@@ -1,61 +1,20 @@
-"""This script goes along the blog post
-"Building powerful image classification models using very little data"
-from blog.keras.io.
-
-In our example we will be using data that can be downloaded at:
-https://www.kaggle.com/tongpython/cat-and-dog
-
-In our setup, it expects:
-- a data/ folder
-- train/ and validation/ subfolders inside data/
-- cats/ and dogs/ subfolders inside train/ and validation/
-- put the cat pictures index 0-X in data/train/cats
-- put the cat pictures index 1000-1400 in data/validation/cats
-- put the dogs pictures index 0-X in data/train/dogs
-- put the dog pictures index 1000-1400 in data/validation/dogs
-
-We have X training examples for each class, and 400 validation examples
-for each class. In summary, this is our directory structure:
-```
-data/
-    train/
-        dogs/
-            dog001.jpg
-            dog002.jpg
-            ...
-        cats/
-            cat001.jpg
-            cat002.jpg
-            ...
-    validation/
-        dogs/
-            dog001.jpg
-            dog002.jpg
-            ...
-        cats/
-            cat001.jpg
-            cat002.jpg
-            ...
-```
-"""
 
 import numpy as np
-import sys
 import os
+from prefect import flow, task
+from prefect.transactions import get_transaction, transaction
 import subprocess
 from shlex import split
-
+import sys
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras import applications
 from tensorflow.keras.callbacks import CSVLogger
 from tqdm.keras import TqdmCallback
-from prefect import flow, task
-from prefect.transactions import get_transaction, transaction
 
 
-@task
+@task(retries=3)
 def add_data(dataset_name: str = "data"):
     """Fetch and add data for model training"""
     subprocess.run(
@@ -69,7 +28,7 @@ def add_data(dataset_name: str = "data"):
     subprocess.run(split(f"dvc add {dataset_name}"))
 
 
-@task
+@task(log_prints=True)
 def train_model():
     """Train model for image classification"""
 
@@ -142,6 +101,8 @@ def train_model():
 
     model.compile(optimizer="rmsprop", loss="binary_crossentropy", metrics=["accuracy"])
 
+    print("Training model")
+    
     history = model.fit(
         train_data,
         train_labels,
