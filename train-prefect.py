@@ -55,6 +55,8 @@ from tqdm.keras import TqdmCallback
 from prefect import flow, task
 from prefect.transactions import get_transaction, transaction
 
+dataset_info = [["data", "v1.0", 1000], ["new-labels", "v2.0", 2000]]
+
 @task
 def add_data(dataset_name: str = "data"):
     """Fetch and add data for model training"""
@@ -178,8 +180,8 @@ def check_model_val(history):
 
 @git_track.on_rollback
 def rollback_workspace(transaction):
-    """Automatically roll back the workspace to previous commit if model evaluation fails"""
-    subprocess.run(split("git reset --hard HEAD"))
+    """Automatically roll back the workspace to the previous commit if model evaluation fails"""
+    subprocess.run(split("git checkout v1.0"))
     subprocess.run(split("dvc checkout"))
     subprocess.run(split(f"git tag -d {transaction.get('tagging')}"))
     print(f"Rolling back workspace from {transaction.get("tagging")} to previous commit because validation accuracy was too low")
@@ -197,9 +199,6 @@ def pipeline(dataset_name: str, tag: str, img_count: int, initial_run: bool = Fa
 
 
 if __name__ == "__main__":
-    dataset_info= [["data", "v1.0", 1000], ["new-labels","v2.0", 2000]]
-        
-    
     pipeline(*dataset_info[0], initial_run=True)
     pipeline(*dataset_info[1])
 
