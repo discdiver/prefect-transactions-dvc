@@ -181,6 +181,7 @@ def rollback_workspace(transaction):
     """Automatically roll back the workspace to previous commit if model evaluation fails"""
     subprocess.run(split("git reset --hard HEAD"))
     subprocess.run(split("dvc checkout"))
+    subprocess.run(split(f"git tag -d {transaction.get('tagging')}"))
     print(f"Rolling back workspace from {transaction.get("tagging")} to previous commit because validation accuracy was too low")
 
  
