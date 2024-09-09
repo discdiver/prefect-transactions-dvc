@@ -102,7 +102,7 @@ def train_model():
     model.compile(optimizer="rmsprop", loss="binary_crossentropy", metrics=["accuracy"])
 
     print("Training model")
-    
+
     history = model.fit(
         train_data,
         train_labels,
@@ -140,7 +140,7 @@ def check_model_val(history):
 @git_track.on_rollback
 def rollback_workspace(transaction):
     """Automatically roll back the workspace to the previous commit if model evaluation fails"""
-    subprocess.run(split("checkout HEAD~1"))
+    subprocess.run(split("git checkout HEAD~1"))
     subprocess.run(split("dvc checkout"))
     subprocess.run(split(f"git tag -d {transaction.get('tagging')}"))
     print(f"Rolling back workspace from {transaction.get("tagging")} to previous commit because validation accuracy was too low")
