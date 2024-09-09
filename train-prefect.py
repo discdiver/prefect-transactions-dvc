@@ -179,11 +179,11 @@ def check_model_val(history):
 @git_track.on_rollback
 def rollback_workspace(transaction):
     """Automatically roll back the workspace to previous commit if model evaluation fails"""
-    subprocess.run(split("git checkout HEAD~1"))
+    subprocess.run(split("git reset --hard HEAD"))
     subprocess.run(split("dvc checkout"))
     print(f"Rolling back workspace from {transaction.get("tagging")} to previous commit because validation accuracy was too low")
 
-
+ 
 @flow
 def pipeline(dataset_name: str, tag: str, img_count: int, initial_run: bool = False):
     """Pipeline for training model and checking validation accuracy"""
@@ -196,8 +196,11 @@ def pipeline(dataset_name: str, tag: str, img_count: int, initial_run: bool = Fa
 
 
 if __name__ == "__main__":
-    pipeline(dataset_name="data", tag="v1.0", img_count=1000, initial_run=True)
-    pipeline(dataset_name="new-labels", tag="v2.0", img_count=2000)
+    dataset_info= [["data", "v1.0", 1000], ["new-labels","v2.0", 2000]]
+        
+    
+    pipeline(*dataset_info[0], initial_run=True)
+    pipeline(*dataset_info[1])
 
 
 # from prefect.transactions import get_transaction, transaction
