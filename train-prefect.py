@@ -127,7 +127,6 @@ def git_track(tag: str = "v1.0", img_count: int = 1000):
         split(f"git commit -m '{tag} model, trained with {img_count} images'")
     )
     subprocess.run(split(f"git tag -a '{tag}' -m 'model {tag}, {img_count} images'"))
-    get_transaction().set("tagging", tag)
 
 
 @task
@@ -150,9 +149,10 @@ def rollback_workspace(transaction):
 def pipeline(dataset_name: str, tag: str, img_count: int, initial_run: bool = False):
     """Pipeline for training model and checking validation accuracy"""
     add_data(dataset_name=dataset_name)
-    with transaction():
+    with transaction() as txn:
         history = train_model()
         git_track(tag=tag, img_count=img_count)
+        txn.set("tagging", tag)
         if not initial_run:
             check_model_val(history=history)
 
