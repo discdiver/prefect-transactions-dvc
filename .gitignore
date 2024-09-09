@@ -12,3 +12,5 @@ cache
 /state
 /cache
 /tmp
+/data
+/model.weights.h5
