@@ -200,26 +200,3 @@ if __name__ == "__main__":
     dataset_info = [["data", "v1.0", 1000], ["new-labels", "v2.0", 2000]]
     pipeline(*dataset_info[0], initial_run=True)
     pipeline(*dataset_info[1])
-
-
-# from prefect.transactions import get_transaction, transaction
-
-# @task
-# def my_task(fpath: str):
-#     # do stuff with `fpath`
-#     # option 1: reference transaction inside task
-#     txn = get_transaction()
-#     txn.set("fpath", fpath)
-
-
-# @my_task.on_rollback
-# def my_hook(txn):
-#     data = txn.get("fpath") # now you can get the data from the transaction in the hook
-
-
-# @flow
-# def my_flow(fpath: str):
-#     with transaction() as txn:
-#         # option 2: use context manager and set variable here
-#         txn.set("fpath", fpath)
-#         my_task(fpath)
