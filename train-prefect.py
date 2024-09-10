@@ -149,8 +149,8 @@ def rollback_workspace(transaction):
 def pipeline(dataset_name: str, tag: str, img_count: int, initial_run: bool = False):
     """Pipeline for training model and checking validation accuracy"""
     add_data(dataset_name=dataset_name)
+    history = train_model()
     with transaction() as txn:
-        history = train_model()
         git_track(tag=tag, img_count=img_count)
         txn.set("tagging", tag)
         if not initial_run:
