@@ -1,4 +1,3 @@
-
 import numpy as np
 import os
 from prefect import flow, task
@@ -133,7 +132,9 @@ def git_track(tag: str = "v1.0", img_count: int = 1000):
 def check_model_val(history):
     """Check accuracy score of validation set"""
     if history.history["val_accuracy"][-1] < 0.95:
-        raise ValueError(f"Validation accuracy is too low:{history.history['val_accuracy'][-1]}")
+        raise ValueError(
+            f"Validation accuracy is too low:{history.history['val_accuracy'][-1]}"
+        )
 
 
 @git_track.on_rollback
@@ -141,10 +142,14 @@ def rollback_workspace(txn):
     """Automatically roll back the workspace to the previous commit if model evaluation fails"""
     subprocess.run(split("git checkout HEAD~1"))
     subprocess.run(split("dvc checkout"))
-    subprocess.run(split(f"git tag -d {txn.get('tagging')}"))
-    print(f"Rolling back workspace from {txn.get("tagging")} to previous commit because validation accuracy was too low")
+    txn = get_transaction()
+    tag = txn.get("tagging")
+    subprocess.run(split("git tag -d {tag}"))
+    print(
+        f"Rolling back workspace from {tag} to previous commit because validation accuracy was too low"
+    )
 
- 
+
 @flow
 def pipeline(dataset_name: str, tag: str, img_count: int, initial_run: bool = False):
     """Pipeline for training model and checking validation accuracy"""
