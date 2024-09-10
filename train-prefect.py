@@ -137,12 +137,12 @@ def check_model_val(history):
 
 
 @git_track.on_rollback
-def rollback_workspace(transaction):
+def rollback_workspace(txn):
     """Automatically roll back the workspace to the previous commit if model evaluation fails"""
     subprocess.run(split("git checkout HEAD~1"))
     subprocess.run(split("dvc checkout"))
-    subprocess.run(split(f"git tag -d {transaction.get('tagging')}"))
-    print(f"Rolling back workspace from {transaction.get("tagging")} to previous commit because validation accuracy was too low")
+    subprocess.run(split(f"git tag -d {txn.get('tagging')}"))
+    print(f"Rolling back workspace from {txn.get("tagging")} to previous commit because validation accuracy was too low")
 
  
 @flow
